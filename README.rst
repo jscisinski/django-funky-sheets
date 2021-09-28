@@ -1,22 +1,8 @@
-===================
-Django Funky Sheets
-===================
 
-Django implementation of Handsontable spreadsheets for CRUD actions.
-
-Live Demo
-=========
-
-Demo_
-
-.. _Demo: http://trco.silkym.com/dfs/create/
 
 Installation
 ============
-
-Install ``django-funky-sheets``::
-
-  $ pip install django-funky-sheets
+``pip install https://github.com/jscisinski/django-funky-sheets/archive/refs/heads/master.zip ``
 
 Add ``funky_sheets`` to your INSTALLED_APPS::
 
@@ -49,10 +35,11 @@ Define URLs for Create and Update views.
     path('update/', views.UpdateMovieView.as_view(), name='update')
   ]
 
+*You can define queryset inside of CreateMovieView/UpdateMovieView
 View
 ----
 
-Define Create and Update views which inherit from ``HotView`` and render the Handsontable spreadsheet based on selected model fields.
+Define Create and Update views which inherit from ``HotView``(extra_views library) and render the Handsontable spreadsheet based on selected model fields.
 
 .. code-block:: python
 
@@ -128,7 +115,7 @@ Define Create and Update views which inherit from ``HotView`` and render the Han
 Template
 --------
 
-``hot_template`` uses ``jQuery 3.3.1`` and ``Handsontable 7.0.0.``
+``hot_template`` uses ``jQuery 3.3.1`` and ``Handsontable 6.2.2.``
 
 If you would like to use different versions of ``jQuery`` and ``Handsontable`` you should create your own ``hot_template`` by copying default ``hot_template`` in funky_sheets/templates/hot/hot.html and loading selected versions of ``jQuery``, ``Handsontable JavaScript and CSS``. Note that the compatibility with different versions is not guaranteed. You should than include your custom ``hot_template`` when creating templates like ``create.html`` and ``update.html`` in the examples.
 
