@@ -2,7 +2,6 @@
 {% load funky_sheets_tags %}
 
 <link href="{% static 'css/handsontable.full.min.css' %}" rel="stylesheet">
-
 <form id="form_hot" method="post" action="" onsubmit="return constructFormset();">
 
   {% csrf_token %}
@@ -20,13 +19,14 @@
 
 </form>
 
-<script src="{% static 'js/jquery-3.3.1.min.js' %}"></script>
+/* js should be downloaded somewhere */
 <script src="{% static 'js/handsontable.full.min.js' %}"></script>
+
 
 <script type="text/javascript">
 
   /* 1. Construct initial data for table from the formset */
-
+/* Tutaj trzeba, zeby hot_template byl dobrze przekazywany od nas, a nie zeby pobierat hot_hot.html z biblioteki*/
   var colHeaders = new Array();
   var fieldTypes = new Array();
   var primaryKeys = new Array();
@@ -217,6 +217,7 @@
       // (i=row number, j=column number)
       else {
         for(var j = 0; j < row.length; j++) {
+
           constructFormField(i, j, fieldTypes[j], row);
         }
         total_non_empty_rows += 1;
@@ -235,9 +236,13 @@
   Array.prototype.isNull = function (){
     return this.join().replace(/,/g,"").length === 0;
   };
+  var dropdownsInRow = 0
 
   // 3.2. Construct form field (i=row number, j=column number)
   function constructFormField(i, j, fieldType, row) {
+    if(j == 0) {
+            dropdownsInRow = 0;
+    }
     var partialName = colHeaders[j].toLowerCase().replace(/ /g,"_");
     var fieldName = "{{ formset.prefix }}-" + i + "-" + partialName;
     var fieldString = "";
@@ -247,14 +252,14 @@
     if (value == null) {
       value = "";
     }
-
     switch(fieldType[0]) {
       case "select": // select field
         // TODO: Add comments
         // Get index of selected choice in choiceStrings
-        var index = fieldType[j][1].indexOf(value);
+        dropdownsInRow = dropdownsInRow + 1 ;
+        var index = fieldType[dropdownsInRow][1].indexOf(value);
         // Get value at index in choiceValues
-        value = fieldType[j][0][index];
+        value = fieldType[dropdownsInRow][0][index];
 
         fieldString = "<select id='id_" + fieldName
                       + "' name='" + fieldName
@@ -304,6 +309,9 @@
   Handsontable.renderers.registerRenderer("cleanHtmlRenderer", cleanHtmlRenderer);
 
   // 3.4. Construct Handsontable columns based on fieldTypes
+  var dropdown_number = 0
+  var columns_indexes = []
+
   var cellWidget = function(item, index) {
     if (item[0] == "checkbox" || item[0] == "m2m checkbox") {
       return {
@@ -312,14 +320,17 @@
         uncheckedTemplate: "{{ checkbox_unchecked }}",
       };
     } else if (item[0] == "select") {
+      dropdown_number = dropdown_number + 1
       return {
         type: "dropdown",
-        source: item[index][1]
+        source: item[dropdown_number][1]
       };
     } else if (item[0] == "date") {
+      columns_indexes.push(index);
       return {
         type: "date",
-        dateFormat: "{{ date_format }}"
+        dateFormat: "MM/DD/YYYY",
+        correctFormat: true,
       };
     } else if (item[0] == "url") {
       return {
@@ -370,7 +381,8 @@
   var hotSettings = {
     data: data,
     colHeaders: colHeaders,
-    columns: columns
+    columns: columns,
+
   };
 
   // Get hotSettings passed in from HotView
@@ -381,7 +393,10 @@
   var hotSettings = $.extend(hotSettings, extraHotSettings);
 
   var hot = new Handsontable(container, hotSettings);
-
+  hot.validateCells;
   $("#HandsontableCopyPaste").css("visibility", "hidden");
-
+  hot.validateColumns(columns_indexes, (valid) => {})
+  document.querySelector('.btn').addEventListener('click', function() {
+    hot.alter('insert_row', 1 , 1); /* Adding 1 row(after 1st row) on button click */
+  })
 </script>
